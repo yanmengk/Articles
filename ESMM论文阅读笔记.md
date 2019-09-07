@@ -57,9 +57,10 @@ $$
 由上式可知，通过预测pCTR、pCTCVR，可以求得pCVR，其中pCTR和pCTCVR都是在整个样本空间进行计算，这消除了样本选择偏差问题，但单独计算pCTCVR和pCTR后按照除法得到pCVR时，由于pCTR是个很小的数值，进行除法会出现数值不稳定问题，在ESMM中是按照乘法形式避免此问题，ESMM中，pCVR只是一个中间变量，它受乘法公式的约束，pCTR和pCTCVR才是ESMM在整个样本空间估计的主要内容，乘法形式使得三个关联的、共同训练的估计器能够利用数据的顺序模式，并在训练期间彼此交流信息。此外，它确保了估计的pCVR的值在[0,1]的范围内，但在除法中可能超过1。
 
 ESMM模型的损失函数定义如下：
-$$
-L(\theta_{cvr},\theta_{ctr})=\sum_{i=1}^Nl(y_i,f(x_i;\theta_{ctr}))+\sum_{i=1}^Nl(y_i\&z_i,f(x_i;\theta_{ctr})\times f(x_i;\theta_{cvr}))
-$$
+<div align="center">
+    <img src = "pictures/math_esmm.png">
+</div>
+
 其中$\theta_{ctr}$和$\theta_{cvr}$是CTR和CVR网络的参数，$l(·)$表示交叉熵。
 
 在ESMM模型中，Embedding层将大规模稀疏输入映射为低维度稠密向量，且CVR网络和CTR网络共享词嵌入字典，遵循特征表示迁移学习范式，这使得ESMM中的CVR网络可以从未点击的浏览样本中学习，并为缓解数据稀疏问题提供了很大帮助。在ESMM模型中两个子网络如果替换为更加先进的模型可能会取得更好的效果。
