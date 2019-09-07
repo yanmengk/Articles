@@ -1,5 +1,9 @@
 ## ESMM论文阅读笔记
 
+<!--ts-->
+
+<!->
+
 ### 1. 论文摘要
 
 准确地预估**点击转化率**（post-click conversion rate, CVR）对推荐和广告等工业应用中的排名系统至关重要。
@@ -41,9 +45,7 @@ $$
 \underbrace{p(y=1,z=1|x)}_{pCTCVR}=\underbrace{p(y=1|x)}_{pCTR}\times \underbrace{p(z=1|y=1,x)}_{pCVR}
 $$
 
-
-
-
+你是
 
 
 
