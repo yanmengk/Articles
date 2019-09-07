@@ -38,8 +38,9 @@ $$
 
 点击转化率的估计可以表示为 $pCVR=p(z=1|y=1,x)$，此外点击率为 $pCTR=p(y=1|x)$,点击且转化的概率为 $pCTCVR=p(y=1,z=1|x)$,因此，给定浏览样本$x$,有如下公式：
 
-$$
-\underbrace{p(y=1,z=1|x)}_{pCTCVR}=\underbrace{p(y=1|x)}_{pCTR}\times\underbrace{p(z=1|y=1,x)}_{pCVR}
-$$
+<div align="center">
+    <img src = "pictures/math.jpeg">
+</div>
+
 哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或
 
