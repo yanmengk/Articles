@@ -20,7 +20,11 @@ pCVR = p(conversion|click,impression)
 $$
 传统的CVR建模方法存在的两个问题：1）样本选择偏差问题（SSB），如下图所示，模型在经过点击了的浏览样本空间内进行训练，同时却在所有的浏览样本空间进行推断，SSB问题损害了训练模型的泛化性能。
 
-<div align=center>![cvr_space](./pictures/cvr_space.jpeg)
+```html
+<div align="center">
+<img src="/pictures/cvr_space.jpeg">
+</div>
+```
 
 2）数据稀疏性（DS）问题。在实践中，为训练CVR模型所收集的数据远少于CTR任务。训练数据的稀疏性使得CVR模型的拟合相当困难。
 
