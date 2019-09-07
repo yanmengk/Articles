@@ -1,9 +1,5 @@
 ## ESMM论文阅读笔记
 
-<!--ts-->
-
-<!->
-
 ### 1. 论文摘要
 
 准确地预估**点击转化率**（post-click conversion rate, CVR）对推荐和广告等工业应用中的排名系统至关重要。
@@ -42,13 +38,11 @@ $$
 
 点击转化率的估计可以表示为 $pCVR=p(z=1|y=1,x)$，此外点击率为 $pCTR=p(y=1|x)$,点击且转化的概率为 $pCTCVR=p(y=1,z=1|x)$,因此，给定浏览样本$x$,有如下公式：
 $$
-\underbrace{p(y=1,z=1|x)}_{pCTCVR}=\underbrace{p(y=1|x)}_{pCTR}\times \underbrace{p(z=1|y=1,x)}_{pCVR}
+\underbrace{p(y=1,z=1|x)}_{pCTCVR}=\underbrace{p(y=1|x)}_{pCTR}\times\underbrace{p(z=1|y=1,x)}_{pCVR}
 $$
 
-你是
 
 
-
-
+哈
 
 
