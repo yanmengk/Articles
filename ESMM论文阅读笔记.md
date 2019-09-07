@@ -18,7 +18,7 @@
 $$
 pCVR = p(conversion|click,impression)
 $$
-传统的CVR建模方法存在的两个问题：1）样本选择偏差问题（SSB），如下图所示，模型在经过点击了的浏览样本空间内进行训练，同时却在所有的浏览样本空间进行推断，SSB问题损害了训练模型的泛化性能。
+传统的CVR建模方法存在的两个问题：1）样本选择偏差问题（SSB），如下图所示，模型在经过点击了的浏览样本空间内进行训练，同时却在所有的浏览样本空间进行推断，SSB问题损害了训练模型的泛化性能。\tag{1}
 
 <div align="center">
     <img src = "pictures/cvr_space.jpeg">
@@ -39,8 +39,49 @@ $$
 点击转化率的估计可以表示为 $pCVR=p(z=1|y=1,x)$，此外点击率为 $pCTR=p(y=1|x)$,点击且转化的概率为 $pCTCVR=p(y=1,z=1|x)$,因此，给定浏览样本$x$,有如下公式：
 
 <div align="center">
-    <img src = "pictures/math.png">
+    <img src = "pictures/math.png"> 
 </div>
 
-哈哈哈哈或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或或
+**ESMM模型介绍**：
 
+<div align="center">
+    <img src = "pictures/model_esmm.png">
+</div>
+
+ESMM模型图如上所示，充分利用了用户操作的序列模式，并借鉴了多任务学习的思路，引入两个辅助任务CTR、CTCVR，消除了样本选择偏差和数据稀疏的问题。
+
+给定一个浏览样本（曝光样本），ESMM会同时计算输出pCTR、pCVR以及PCTCVR。CVR网络如上图左侧所示，CTR网络如上图右侧所示，他们拥有相同的网络结构。由下式可知，ESMM在整个空间上建模：
+$$
+p(z=1|y=1,x)=\frac{p(y=1,z=1|x)}{p(y=1|x)}
+$$
+由上式可知，通过预测pCTR、pCTCVR，可以求得pCVR，其中pCTR和pCTCVR都是在整个样本空间进行计算，这消除了样本选择偏差问题，但单独计算pCTCVR和pCTR后按照除法得到pCVR时，由于pCTR是个很小的数值，进行除法会出现数值不稳定问题，在ESMM中是按照乘法形式避免此问题，ESMM中，pCVR只是一个中间变量，它受乘法公式的约束，pCTR和pCTCVR才是ESMM在整个样本空间估计的主要内容，乘法形式使得三个关联的、共同训练的估计器能够利用数据的顺序模式，并在训练期间彼此交流信息。此外，它确保了估计的pCVR的值在[0,1]的范围内，但在除法中可能超过1。
+
+ESMM模型的损失函数定义如下：
+$$
+L(\theta_{cvr},\theta_{ctr})=\sum_{i=1}^Nl(y_i,f(x_i;\theta_{ctr}))+\sum_{i=1}^Nl(y_i\&z_i,f(x_i;\theta_{ctr})\times f(x_i;\theta_{cvr}))
+$$
+其中$\theta_{ctr}$和$\theta_{cvr}$是CTR和CVR网络的参数，$l(·)$表示交叉熵。
+
+在ESMM模型中，Embedding层将大规模稀疏输入映射为低维度稠密向量，且CVR网络和CTR网络共享词嵌入字典，遵循特征表示迁移学习范式，这使得ESMM中的CVR网络可以从未点击的浏览样本中学习，并为缓解数据稀疏问题提供了很大帮助。在ESMM模型中两个子网络如果替换为更加先进的模型可能会取得更好的效果。
+
+### 4. 实验部分
+
+在一部分公开数据集和淘宝实际数据集上进行了实验，并对比了其他6个模型，采用AUC作为评价指标，无论是在CVR任务还是CTCVR任务上，ESMM都取得了最好的效果，详细实验数据如下所示：
+
+公开数据集上的实验结果：
+
+<div align="center">
+    <img src = "pictures/result_esmm.png">
+</div>
+
+ 工业数据集上的实验结果：
+
+<div align="center">
+    <img src = "pictures/result2_esmm.png">
+</div>
+
+   
+
+### 5. 展望
+
+未来可以考虑设计全局优化模型，涉及多阶段动作序列，如请求→浏览曝光→点击→转化。
