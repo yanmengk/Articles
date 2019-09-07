@@ -37,10 +37,10 @@ $$
 假设数据集表示为$ S={(x_i,y_i)\rightarrow z_i}\mid_{i=1}^N$，其中样本$(x,y\rightarrow z）$是从分布$D$中采样得到的，域为$X\times Y\times Z $，其中X为特征空间，Y和Z是标签空间,$N$是所有浏览样本的数量，$x$表示浏览样本的特征向量，通常是高维稀疏向量，含多个域如user_field、item_field等，$y$和$z$是binary标签，非0即1。
 
 点击转化率的估计可以表示为 $pCVR=p(z=1|y=1,x)$，此外点击率为 $pCTR=p(y=1|x)$,点击且转化的概率为 $pCTCVR=p(y=1,z=1|x)$,因此，给定浏览样本$x$,有如下公式：
+
 $$
 \underbrace{p(y=1,z=1|x)}_{pCTCVR}=\underbrace{p(y=1|x)}_{pCTR}\times\underbrace{p(z=1|y=1,x)}_{pCVR}
 $$
-
 
 
 哈
