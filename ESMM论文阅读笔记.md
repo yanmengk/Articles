@@ -18,10 +18,10 @@
 $$
 pCVR = p(conversion|click,impression)
 $$
-传统的CVR建模方法存在的两个问题：1）样本选择偏差问题（SSB），如下图所示，模型在经过点击了的浏览样本空间内进行训练，同时却在所有的浏览样本空间进行推断，SSB问题损害了训练模型的泛化性能。\tag{1}
+传统的CVR建模方法存在的两个问题：1）样本选择偏差问题（SSB），如下图所示，模型在经过点击了的浏览样本空间内进行训练，同时却在所有的浏览样本空间进行推断，SSB问题损害了训练模型的泛化性能。
 
 <div align="center">
-    <img src = "pictures/cvr_space.jpeg">
+    <img src = "esmm_pics/cvr_space.jpeg">
 </div>
 
 2）数据稀疏性（DS）问题。在实践中，为训练CVR模型所收集的数据远少于CTR任务。训练数据的稀疏性使得CVR模型的拟合相当困难。
@@ -45,7 +45,7 @@ $$
 **ESMM模型介绍**：
 
 <div align="center">
-    <img src = "pictures/model_esmm.png">
+    <img src = "esmm_pics/model_esmm.png">
 </div>
 
 ESMM模型图如上所示，充分利用了用户操作的序列模式，并借鉴了多任务学习的思路，引入两个辅助任务CTR、CTCVR，消除了样本选择偏差和数据稀疏的问题。
@@ -72,13 +72,13 @@ ESMM模型的损失函数定义如下：
 公开数据集上的实验结果：
 
 <div align="center">
-    <img src = "pictures/result_esmm.png">
+    <img src = "esmm_pics/result_esmm.png">
 </div>
 
  工业数据集上的实验结果：
 
 <div align="center">
-    <img src = "pictures/result2_esmm.png">
+    <img src = "esmm_pics/result2_esmm.png">
 </div>
 
    
