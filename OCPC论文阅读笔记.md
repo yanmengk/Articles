@@ -1,7 +1,5 @@
 ## OCPC论文阅读笔记
 
-[TOC]
-
 ### 0. 准备知识
 
 `pCTR`：预估点击率 	`pCVR`：点击转化率		`bid`：广告出价
@@ -107,21 +105,21 @@ $roi_a$与$E_u[p(c|u,a)]$ 成线性关系，对于单次请求，假设出价从
 
 先看最简单的情况，只有1个广告位，候选广告集合A中共有n个广告，通过调整出价来竞争这个广告位，优化问题的数学形式如下：
 
-​													$\max_{b_1^*,\cdots,b_n^*}f(k,b_k^*)\qquad\qquad\qquad\qquad \\ s.t.\qquad k=\mathop{\arg\max}_i\ pctr_i*b_i^* \\ \qquad\qquad l(b_i^*)\le b_i^*\le u(b_i^*),\forall i\in A$	
+​													$\max_{b_1^*,\cdots,b_n^*}f(b_k^*)\qquad\qquad\qquad\qquad \\ s.t.\qquad k=\mathop{\arg\max}_i\ pctr_i*b_i^* \\ \qquad\qquad l(b_i^*)\le b_i^*\le u(b_i^*),\forall i\in A$	
 
 $k$是最终胜出的广告，依赖于$b_1^*,...,b_n^* $的选取，$f(·)$是需要优化的目标函数，综合了我们关注的指标。比如下面两个例子：
 
-​											$f_{1}\left(k,b_{k}^{*}\right)=\operatorname{pctr}_k * \operatorname{pcvr}_{k} * v_{k}$
+​											$f_{1}\left(b_{k}^{*}\right)=\operatorname{pctr}_k * \operatorname{pcvr}_{k} * v_{k}$
 
-​											$f_{2}\left(k,b_{k}^{*}\right)=\operatorname{pctr}_{k} * \operatorname{pcvr}_{k} * v_{k}+\alpha * \operatorname{pctr}_{k} * b_{k}^{*}$
+​											$f_{2}\left(b_{k}^{*}\right)=\operatorname{pctr}_{k} * \operatorname{pcvr}_{k} * v_{k}+\alpha * \operatorname{pctr}_{k} * b_{k}^{*}$
 
 $f_1$只考虑GMV，而$f_2$同时考虑GMV和eCPM即广告平台收入。论文后面的实验部分给出了一种更复杂的形式，同样是综合GMV和eCPM：
 
-​										$f(k,b_k^*)=pctr_k*b_k^**(1+\sigma(\frac{pcvr_k*v_k*||A||}{\sum_{i\in A}pcvr_i*v_i},w)*r_a)$
+​										$f\left(b_{k}^{*}\right)=pctr_k*b_k^**(1+\sigma(\frac{pcvr_k*v_k*||A||}{\sum_{i\in A}pcvr_i*v_i},w)*r_a)$
 
 其中$w=6$，$r_a=0.4$，$σ(x,w)=\frac{x^w−1}{x^w+1}$，当$w>0$时，$σ(x,w)$ 是一个关于$x$的值域范围(-1,1)的单调增函数。
 
-以上所有的$f(k,b^∗_k)$函数都是$b^∗_k$ 的单调增函数（更准确的说应该是单调非减函数），这为后面的ranking算法提供了便利。
+以上所有的$f(b^∗_k)$函数都是$b^∗_k$ 的单调增函数（更准确的说应该是单调非减函数），这为后面的ranking算法提供了便利。
 
 ![image-20191210172509596](ocpc_pics/rank.png)
 
@@ -188,5 +186,86 @@ CTR/CVR模型线下评估一般都用AUC，论文提到Google的那篇Wide & Dee
 
   
 
+------
 
+### 智能调价模型解析
 
+RTP->OCPC
+
+RTP：实时预测候选广告对象的点击率pCTR和转化率pCVR
+
+OCPC：calibration + calculateBoundary + rank
+
+- calibration：校正
+
+  - 原因：实践中发现，模型的pCVR存在偏差，需要校正。当真实CVR值越大时，pCVR和真实CVR的差值也越大，即需要进行校正，调整偏差
+
+  - 校正公式：
+
+    $p(c|u,a)= \begin{cases} p(c|u,a), & p(c|u,a)<tc \\ tc*(1+\log(\frac{p(c|u,a)}{tc})), & p(c|u,a)\ge tc \\ \end{cases}$
+
+    其中tc为阈值，在论文中取的是0.012
+
+- calculateBoundary：计算优化出价bid的上界和下界【可行域】
+
+  - 原因： 在细粒度上根据点击转化率调整出价，帮助广告主获取更优质的流量，保证ROI不降，提高流量分配效率；另外出于安全和商业考虑，还设置了一个阈值参数$r_{a}$。
+
+  - 上下界公式：
+
+    ​				$l(b_a^*)= \begin{cases} b_a\cdot(1-r_a), & \frac{p(c|u,a)}{E_u[p(c|u,a)]}<1 \\ b_a, & \frac{p(c|u,a)}{E_u[p(c|u,a)]}\ge 1 \\ \end{cases} \\ u(b_a^*)= \begin{cases} b_a, & \frac{p(c|u,a)}{E_u[p(c|u,a)]}<1 \\ b_a\cdot\min(1+r_a,\frac{p(c|u,a)}{E_u[p(c|u,a)]}), & \frac{p(c|u,a)}{E_u[p(c|u,a)]}\ge 1 \\ \end{cases}$
+
+- rank：排序
+
+  - rank是从bid的可行域有效选取最优bid的方法，以综合三方利益获取最佳的性能指标
+
+  - 算法：
+
+    ![image-20191210172509596](ocpc_pics/rank.png)
+
+    3-5行：表示上界u(s)必须大于等于最大下界max(l(s))，不然不满足约束条件
+
+    8-11行：见原文中解释：限制剩余广告的$u(s_i^*)$不大于$u(s_k^*)$,是为了保证选出的广告$k$经过bid优化后能够拥有最大的eCPM，见原文约束公式(6)。
+
+    13-15行：之所以是candidate set和winning set的并集，是因为算法中定义的output是对初始候选集A中任何一个ad的优化出价，所以是并集。
+
+  - 举例：
+
+    比如候选广告集合A中有4个候选广告，广告展示位N=2，现在我们想要从广告1-4中选择2个广告供展示。根据排序算法：
+
+    1）首先将这4个广告按照$f_2(u(b^*))$从大到小的顺序排列
+
+    2）观察$l(s^*)$这一列最大值为$l(s_3^*)$=0.09 
+
+    3）观察排好序的广告中，第一个广告Ad #1的$u(s_1^*)$=0.112,它大于0.09,因此将其加入到winning set中(此时winning set = {Ad #1})，同时将其从candidate set中去除（此时candidate set={Ad #2, Ad # 3, Ad #4}）
+
+    4）对于candidate set中的广告，按照算法中line9-10行更新$u(s_i^*)$,$u(b_i^*)$
+
+    其中$u(s_2^*)$仍等于0.075,$u(b_2^*)$仍等于1.5，
+
+    $u(s_3^*)$等于0.112，$u(b_3^*)$等于1.86，
+
+    $u(s^*_4)$仍等于0.04,$u(b^*_4)$仍等于1
+
+    5）因为winning set的大小为1（不等于2）且candidate set的大小也不为0，继续循环算法line3-11行。
+
+    此时，观察$l(s^*)$这一列最大值仍为$l(s_3^*)$=0.09 
+
+    观察排好序的候选广告集合中，Ad #2的$u(s^*_2)$=0.075,它不大于0.09,因此不选，继续看Ad #3,$u(s^*_3)$=0.112,大于0.09，将其加入到winning set中(此时winning set = {Ad #1, Ad #3})，同时将其从candidate set中去除（此时candidate set={Ad #2, Ad #4}）
+
+    对于candidate set中的广告，按照算法中line9-10行更新$u(s_i^*)$,$u(b_i^*)$
+
+    其中$u(s_2^*)$仍等于0.075,$u(b_2^*)$仍等于1.5，
+
+    $u(s^*_4)$仍等于0.04,$u(b^*_4)$仍等于1
+
+    6）因为winning set的大小为2，退出循环，对于winning set和candidate set中的每一个广告，分别求其优化出价$b^*$,公式为$b^*_i=\frac{u(s_i^*)}{pctr_i}$,
+
+    对于Ad #1，$b^*_1=0.112/0.04=2.8$
+
+    Ad #3，$b^*_3=0.112/0.06=1.86$
+
+    Ad #2, $b^*_2=0.075/0.05=1.5$
+
+    Ad #4, $b^*_4=0.04/0.04=1$
+
+    7）结束，得到原始候选广告集合中各个广告的优化出价$b^*$
