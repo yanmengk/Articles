@@ -36,13 +36,37 @@ Generalization：更加倾向于提高推荐的多样性。
 
 ![image-20200506170239153](pictures/4_1.png)
 
+`Wide部分`：
 
+使用广义线性模型，特征集包含原始特征和转换后的特征。最重要的转换是cross-product transformation，定义如下：
 
+<img src="pictures/4_2.png" alt="image-20200507082326389" style="zoom:40%;" />
 
+对于二分类特征，进行交叉相乘转换（例如，当且仅当AND（gender = female，language = en））为1构成特征（“性别=女性”和“语言= en”）全部为1，否则为0。这就捕获了交互之间的二元特征，并给广义线性模型增加了非线性。
+
+`Deep部分`：
+
+Deep部分是常见的前馈神经网络。略过不多介绍了。
+
+`联合训练joint training`：
+
+Wide部分和Deep部分联合训练，可以通过从模型输出到wide组件和deep组件反向传播梯度利用mini-batch的随机梯度的方法优化完成。在Google的实验中，对于wide组件是通过带L1正则项的ftrl优化，对于deep组件通过AdaGrad优化完成。模型的预测输出如下，由wide组件和deep组件加起来套进一个sigmoid函数。
+
+<img src="pictures/4_3.png" alt="image-20200507083105123" style="zoom:40%;" />
 
 #### 系统实现&实验结果
 
+系统实现分为数据生成、模型训练和模型服务3部分。如下所示：
 
+<img src="pictures/4_4.png" alt="image-20200507083443611" style="zoom:50%;" />
+
+模型在Google Play的实现如下图。值得注意的是，对于连续值的特征，是这么做归一化的，先将原始值通过累计分布函数进行变换P(X <=x),然后用分位数表示，最后用分位数进行归一。训练阶段，输入层将训练数据和词表产生稀疏和稠密的特征以及label。Wide组件由用户安装app和展示app的交叉特征构成。对于deep组件，枚举类的稀疏特征embedding成为一个32维的向量，然后跟连续值特征拼接在一起成为一个1200维的向量。串联后的向量会灌进三层ReLU layer。最后deep组件和wide组件一起输入到logistic。如下所示：
+
+<img src="pictures/4_5.png" alt="image-20200507083532204" style="zoom:40%;" />
+
+实验结果如下所示：
+
+<img src="pictures/4_6.png" alt="image-20200507083655658" style="zoom:40%;" />
 
 #### 结论
 
